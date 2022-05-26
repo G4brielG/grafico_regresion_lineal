@@ -14,18 +14,24 @@ modelo.add(tf.layers.dense({
 modelo.compile({
   optimizer: "sgd",
   loss: "meanSquaredError",
+  metrics: ['accuracy']
 });
 
 const xs = tf.tensor([-1, 0, 1, 2, 3, 4], [6, 1])
 const ys = tf.tensor([-1, 2, 5, 8, 11, 14], [6, 1]);
 
+const surface0 = {
+  name: 'Pérdida',
+  tab: 'Pérdida'
+};
+
 modelo
-  .fit(xs, ys, { epochs: 500, })
+  .fit(xs, ys, { epochs: 60, batchSize: 64, callbacks: tfvis.show.fitCallbacks(surface0, ['loss', 'acc']) })
   .then(() => {
     const TensorX = tf.tensor([0, 1, 2, 3, 4, 5, 6, 7, 8]);
     const datosTensor = modelo.predict(TensorX).dataSync();
     const [...valores] = datosTensor;
-    // Separar los valores en x e Y
+    // Separa los valores en x e Y
     const res = valores.map((y, x) => ({ x, y }));
 
     const series = ["y=3x+2"];
@@ -34,40 +40,11 @@ modelo
       series
     };
 
-    const surface = {
+    const surface1 = {
       name: "3x+2",
       tab: "Función"
     };
 
-    tfvis.render.linechart(surface, data);
+    tfvis.render.linechart(surface1, data);
     tf.dispose([xs, ys, modelo, datosTensor, TensorX]);
   });
-
-//Perdidas
-
-const model = tf.sequential({
-  layers: [
-    tf.layers.dense({
-      inputShape: 1,
-      units: 1,
-      activation: 'relu'
-    })
-  ]
-});
-
-model.compile({
-  optimizer: 'sgd',
-  loss: "meanSquaredError",
-  metrics: ['accuracy']
-});
-
-const surface = {
-  name: 'Pérdida',
-  tab: 'Pérdida'
-};
-
-model.fit(xs, ys, {
-  epochs: 10,
-  batchSize: 32,
-  callbacks: tfvis.show.fitCallbacks(surface, ['loss', 'acc']),
-});
